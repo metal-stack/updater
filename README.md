@@ -9,38 +9,38 @@ Example Usage:
 
 const (
     programName = "mybinary"
-	downloadURLPrefix = "https://my.website.com/" + programName
+    downloadURLPrefix = "https://my.website.com/" + programName
 )
 
 var (
-	updateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "update the program",
-	}
-	updateCheckCmd = &cobra.Command{
-		Use:   "check",
-		Short: "check for update of the program",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			u := updater.New(downloadURLPrefix, programName)
-			return u.Check()
-		},
-	}
-	updateDoCmd = &cobra.Command{
-		Use:   "do",
-		Short: "do the update of the program",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			u := updater.New(downloadURLPrefix, programName)
-			return u.Do()
-		},
-	}
-	updateDumpCmd = &cobra.Command{
-		Use:   "dump <binary>",
-		Short: "dump the version update file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			u := updater.New(downloadURLPrefix, programName)
-			return u.Dump()
-		},
-	}
+    updateCmd = &cobra.Command{
+        Use:   "update",
+        Short: "update the program",
+    }
+    updateCheckCmd = &cobra.Command{
+        Use:   "check",
+        Short: "check for update of the program",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            u := updater.New(downloadURLPrefix, programName)
+            return u.Check()
+        },
+    }
+    updateDoCmd = &cobra.Command{
+        Use:   "do",
+        Short: "do the update of the program",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            u := updater.New(downloadURLPrefix, programName)
+            return u.Do()
+        },
+    }
+    updateDumpCmd = &cobra.Command{
+        Use:   "dump <binary>",
+        Short: "dump the version update file",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            u := updater.New(downloadURLPrefix, programName)
+            return u.Dump()
+        },
+    }
 )
 
 ```
