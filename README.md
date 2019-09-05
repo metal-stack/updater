@@ -6,6 +6,12 @@ Updater will do that for the user with a simple command.
 Example Usage:
 
 ```go
+package main
+
+import (
+    "github.com/metal-pod/updater"
+    "github.com/spf13/cobra"
+)
 
 const (
     programName = "mybinary"
@@ -38,7 +44,7 @@ var (
         Short: "dump the version update file",
         RunE: func(cmd *cobra.Command, args []string) error {
             u := updater.New(downloadURLPrefix, programName)
-            return u.Dump()
+            return u.Dump(args[0])
         },
     }
 )

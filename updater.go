@@ -176,6 +176,9 @@ func getOwnLocation() (string, error) {
 func sum(binary string) (string, error) {
 	hasher := sha256.New()
 	s, err := ioutil.ReadFile(binary)
+	if err != nil {
+		return "", err
+	}
 	hasher.Write(s)
 	if err != nil {
 		return "", err
