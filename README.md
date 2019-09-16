@@ -1,9 +1,10 @@
 # Updater
 
-CLI´s get widely used, updating them for various OSes is a pain. The common approach is to add a README.md on the project website an tell the user howto download and install that binary onto his local machine.
+CLI´s get widely used. Updating them for various OSes is a pain. The common approach is to add a README.md on the project website an tell the user how to download and install that binary on his local machine.  
+
 Updater will do that for the user with a simple command.
 
-Example Usage:
+Example usage:
 
 ```go
 package main
@@ -48,17 +49,15 @@ var (
         },
     }
 )
-
 ```
 
-You need to put the following files onto the webserver:
+You need to place the following files on a webserver:
 
 ```bash
-
 mybinary-linux-amd64
 version-linux-amd64.json
-
 ```
 
-Where *mybinary-linux-amd64* is the actual binary, you also can of course create additional binaries for windows and darwin accordingly.
-*version-linux-amd64.json* is a json file with the version and the checksum of the binary. This can be generated with the *dump* command shown above.
+Where *mybinary-linux-amd64* is the actual binary. You also can of course create additional binaries for Windows and Darwin accordingly.  
+
+*version-linux-amd64.json* is a JSON file containing version and checksum of the binary. It can be generated with the `dump` command shown above.
