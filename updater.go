@@ -179,7 +179,7 @@ func sum(binary string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	hasher.Write(s)
+	_, err = hasher.Write(s)
 	if err != nil {
 		return "", err
 	}
@@ -225,6 +225,9 @@ func downloadFile(out *os.File, url, checksum string) error {
 	// create proxy reader
 	barReader := bar.NewProxyReader(resp.Body)
 	_, err = io.Copy(out, barReader)
+	if err != nil {
+		return err
+	}
 	bar.Finish()
 
 	c, err := sum(out.Name())
