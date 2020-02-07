@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/metal-pod/v"
+	"github.com/metal-stack/v"
 	"github.com/pkg/errors"
 
 	"github.com/cheggaaa/pb/v3"

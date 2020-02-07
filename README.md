@@ -10,7 +10,7 @@ Example usage:
 package main
 
 import (
-    "github.com/metal-pod/updater"
+    "github.com/metal-stack/updater"
     "github.com/spf13/cobra"
 )
 
