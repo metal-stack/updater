@@ -1,9 +1,8 @@
 package updater
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,47 +15,46 @@ import (
 	"time"
 
 	"github.com/metal-stack/v"
-	"github.com/pkg/errors"
 
 	"github.com/cheggaaa/pb/v3"
 )
 
 // Updater update a running binary
 type Updater struct {
-	programName       string
-	downloadURLPrefix string
-	binaryURL         string
-	releaseURL        string
+	programName string
+	downloadURL string
+	checksum    string
+	date        time.Time
+	tag         string
 }
 
 // New create a Updater
-func New(downloadURLPrefix, programName string) *Updater {
-	return &Updater{
-		programName:       programName,
-		downloadURLPrefix: downloadURLPrefix,
-		releaseURL:        downloadURLPrefix + "version-" + runtime.GOOS + "-" + runtime.GOARCH + ".json",
-		binaryURL:         downloadURLPrefix + programName + "-" + runtime.GOOS + "-" + runtime.GOARCH,
-	}
-}
+func New(owner, repo, programName string) (*Updater, error) {
 
-// Release represents a release
-type Release struct {
-	Version  time.Time
-	Checksum string
+	fullProgramName := programName + "-" + runtime.GOOS + "-" + runtime.GOARCH
+
+	release, err := latestRelease(fullProgramName, owner, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Updater{
+		programName: programName,
+		downloadURL: release.url,
+		checksum:    release.checksum,
+		date:        release.date,
+		tag:         release.tag,
+	}, nil
 }
 
 // Do actually updates local programm with the most recent found on the download server
 func (u *Updater) Do() error {
-	latestVersion, err := u.versionInfo(u.releaseURL)
-	if err != nil {
-		return fmt.Errorf("unable read version information:%v", err)
-	}
 
 	tmpFile, err := ioutil.TempFile("", u.programName)
 	if err != nil {
 		return fmt.Errorf("unable create tempfile:%v", err)
 	}
-	err = downloadFile(tmpFile, u.binaryURL, latestVersion.Checksum)
+	err = downloadFile(tmpFile, u.downloadURL, u.checksum)
 	if err != nil {
 		return err
 	}
@@ -96,38 +94,8 @@ func (u *Updater) Do() error {
 	return nil
 }
 
-// Dump version of local binary in json format which is suitable as version.json locaten on the downloadserver.
-func (u *Updater) Dump(fullPath string) error {
-	if len(fullPath) < 1 {
-		return errors.New("program binary as first argument required")
-	}
-
-	checksum, err := sum(fullPath)
-	if err != nil {
-		return err
-	}
-	version, err := time.Parse(time.RFC3339, v.BuildDate)
-	if err != nil {
-		return err
-	}
-	r := Release{
-		Version:  version,
-		Checksum: checksum,
-	}
-	bytes, err := json.MarshalIndent(r, "", "  ")
-	if err != nil {
-		return err
-	}
-	_, err = fmt.Println(string(bytes))
-	return err
-}
-
 // Check version of locally installed program with that available on the download server.
 func (u *Updater) Check() error {
-	latestVersionBuildtime, err := u.versionInfo(u.releaseURL)
-	if err != nil {
-		return err
-	}
 	thisVersionBuildtime, err := time.Parse(time.RFC3339, v.BuildDate)
 	if err != nil {
 		return err
@@ -138,10 +106,10 @@ func (u *Updater) Check() error {
 		return err
 	}
 
-	fmt.Printf("latest version:%s\n", latestVersionBuildtime.Version.Format(time.RFC3339))
-	fmt.Printf("local  version:%s\n", thisVersionBuildtime.Format(time.RFC3339))
+	fmt.Printf("latest version:%s from:%s\n", u.tag, u.date.Format(time.RFC3339))
+	fmt.Printf("local  version:%s from:%s\n", v.Version, thisVersionBuildtime.Format(time.RFC3339))
 
-	age, isUpToDate := getAgeAndUptodateStatus(latestVersionBuildtime.Version, thisVersionBuildtime)
+	age, isUpToDate := getAgeAndUptodateStatus(u.date, thisVersionBuildtime)
 	if isUpToDate {
 		fmt.Printf("%s is up to date\n", u.programName)
 	} else {
@@ -173,8 +141,8 @@ func getOwnLocation() (string, error) {
 	return location, nil
 }
 
-func sum(binary string) (string, error) {
-	hasher := sha256.New()
+func md5sum(binary string) (string, error) {
+	hasher := md5.New()
 	s, err := ioutil.ReadFile(binary)
 	if err != nil {
 		return "", err
@@ -185,27 +153,6 @@ func sum(binary string) (string, error) {
 	}
 
 	return string(hex.EncodeToString(hasher.Sum(nil))), nil
-}
-
-func (u *Updater) versionInfo(url string) (Release, error) {
-	var release Release
-	client := &http.Client{}
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return release, errors.Wrap(err, "error creating new http request")
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return release, errors.Wrapf(err, "error with http GET for endpoint %s", url)
-	}
-
-	defer resp.Body.Close()
-	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return release, errors.Wrap(err, "Error getting json from "+u.programName+" version url")
-	}
-	return release, nil
 }
 
 // downloadFile will download a url to a local file. It's efficient because it will
@@ -230,7 +177,7 @@ func downloadFile(out *os.File, url, checksum string) error {
 	}
 	bar.Finish()
 
-	c, err := sum(out.Name())
+	c, err := md5sum(out.Name())
 	if err != nil {
 		return fmt.Errorf("unable to calculate checksum:%v", err)
 	}
