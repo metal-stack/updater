@@ -4,6 +4,8 @@ CLI´s get widely used. Updating them for various OSes is a pain. The common app
 
 Updater will do that for the user with a simple command.
 
+It will download the binary from github releases.
+
 Example usage:
 
 ```go
@@ -16,7 +18,8 @@ import (
 
 const (
     programName = "mybinary"
-    downloadURLPrefix = "https://my.website.com/" + programName
+    owner = "my-github-organisation"
+    repo = "my-cli"
 )
 
 var (
@@ -28,7 +31,10 @@ var (
         Use:   "check",
         Short: "check for update of the program",
         RunE: func(cmd *cobra.Command, args []string) error {
-            u := updater.New(downloadURLPrefix, programName)
+            u, err := updater.New(owner, repo, programName)
+            if err != nil {
+                return err
+            }
             return u.Check()
         },
     }
@@ -36,28 +42,13 @@ var (
         Use:   "do",
         Short: "do the update of the program",
         RunE: func(cmd *cobra.Command, args []string) error {
-            u := updater.New(downloadURLPrefix, programName)
+            u, err := updater.New(owner, repo, programName)
+            if err != nil {
+                return err
+            }
             return u.Do()
         },
     }
-    updateDumpCmd = &cobra.Command{
-        Use:   "dump <binary>",
-        Short: "dump the version update file",
-        RunE: func(cmd *cobra.Command, args []string) error {
-            u := updater.New(downloadURLPrefix, programName)
-            return u.Dump(args[0])
-        },
-    }
+
 )
 ```
-
-You need to place the following files on a webserver:
-
-```bash
-mybinary-linux-amd64
-version-linux-amd64.json
-```
-
-Where *mybinary-linux-amd64* is the actual binary. You also can of course create additional binaries for Windows and Darwin accordingly.  
-
-*version-linux-amd64.json* is a JSON file containing version and checksum of the binary. It can be generated with the `dump` command shown above.
