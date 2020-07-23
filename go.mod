@@ -3,6 +3,7 @@ module github.com/metal-stack/updater
 go 1.13
 
 require (
+	github.com/blang/semver/v4 v4.0.0
 	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/google/go-github/v32 v32.1.0

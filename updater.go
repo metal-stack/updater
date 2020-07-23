@@ -17,6 +17,8 @@ import (
 	"github.com/metal-stack/v"
 
 	"github.com/cheggaaa/pb/v3"
+
+	"github.com/blang/semver/v4"
 )
 
 // Updater update a running binary
@@ -109,7 +111,7 @@ func (u *Updater) Check() error {
 	fmt.Printf("latest version:%s from:%s\n", u.tag, u.date.Format(time.RFC3339))
 	fmt.Printf("local  version:%s from:%s\n", v.Version, thisVersionBuildtime.Format(time.RFC3339))
 
-	age, isUpToDate := getAgeAndUptodateStatus(u.date, thisVersionBuildtime)
+	age, isUpToDate := getAgeAndUptodateStatus(u.tag, u.date, v.Version, thisVersionBuildtime)
 	if isUpToDate {
 		fmt.Printf("%s is up to date\n", u.programName)
 	} else {
@@ -120,13 +122,25 @@ func (u *Updater) Check() error {
 	return nil
 }
 
-// getAgeAndStatus calculates the age and decides if it is considered up to date, returns true if uptodate
-func getAgeAndUptodateStatus(latestVersionTime, thisVersionTime time.Time) (time.Duration, bool) {
+// getAgeAndStatus calculates the age (difference in release time) and decides if the local version is up to date based on semantic version comparison, returns true if up to date.
+func getAgeAndUptodateStatus(latestVersionTag string, latestVersionTime time.Time, thisVersionVersion string, thisVersionTime time.Time) (time.Duration, bool) {
 
 	// latestVersionBuildtime is expected to be "greater" or "equal" than the version of this binary "thisVersionBuildtime"
 	age := latestVersionTime.Sub(thisVersionTime)
 
-	return age, age <= 0
+	latestVersion, err := semver.ParseTolerant(latestVersionTag)
+	if err != nil {
+		fmt.Printf("Error: Latest version tag %s is not a valid semantic version!\n", latestVersionTag)
+		return 0, false
+	}
+
+	thisVersion, err := semver.ParseTolerant(thisVersionVersion)
+	if err != nil {
+		fmt.Printf("Error: Local version string %s is not a valid semantic version!\n", thisVersionVersion)
+		return 0, false
+	}
+
+	return age, semver.Version.LE(latestVersion, thisVersion)
 }
 
 func getOwnLocation() (string, error) {
