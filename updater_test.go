@@ -86,6 +86,7 @@ func Test_getAgeAndUptodateStatus(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			gotAge, gotUptodate := getAgeAndUptodateStatus(tt.args.latestVersionTag, tt.args.latestVersionTime, tt.args.thisVersionVersion, tt.args.thisVersionTime)
 			if gotAge != tt.age {

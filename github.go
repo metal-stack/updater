@@ -61,6 +61,7 @@ func latestRelease(artefact, owner, repo string) (*release, error) {
 
 func slurpFile(url string) (string, error) {
 	// Get the data
+	//nolint:gosec,noctx
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err

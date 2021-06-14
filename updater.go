@@ -1,7 +1,7 @@
 package updater
 
 import (
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -54,7 +54,7 @@ func (u *Updater) Do() error {
 
 	tmpFile, err := ioutil.TempFile("", u.programName)
 	if err != nil {
-		return fmt.Errorf("unable create tempfile:%v", err)
+		return fmt.Errorf("unable create tempfile:%w", err)
 	}
 	err = downloadFile(tmpFile, u.downloadURL, u.checksum)
 	if err != nil {
@@ -62,17 +62,17 @@ func (u *Updater) Do() error {
 	}
 	location, err := getOwnLocation()
 	if err != nil {
-		return fmt.Errorf("unable to get own binary location:%v", err)
+		return fmt.Errorf("unable to get own binary location:%w", err)
 	}
 	info, err := os.Stat(location)
 	if err != nil {
-		return fmt.Errorf("unable to stat old binary:%v", err)
+		return fmt.Errorf("unable to stat old binary:%w", err)
 	}
 	mode := info.Mode()
 	lf, err := os.OpenFile(location, os.O_WRONLY, mode)
 	if err != nil {
 		if os.IsPermission(err) {
-			return fmt.Errorf("unable to write to:%s need root access:%v", location, err)
+			return fmt.Errorf("unable to write to:%s need root access:%w", location, err)
 		}
 	}
 	lf.Close()
@@ -81,16 +81,16 @@ func (u *Updater) Do() error {
 	defer os.Remove(oldlocation)
 	err = os.Rename(location, oldlocation)
 	if err != nil {
-		return fmt.Errorf("unable to rename old binary:%v", err)
+		return fmt.Errorf("unable to rename old binary:%w", err)
 	}
 
 	err = copy(tmpFile.Name(), location)
 	if err != nil {
-		return fmt.Errorf("unable to copy:%v", err)
+		return fmt.Errorf("unable to copy:%w", err)
 	}
 	err = os.Chmod(location, mode)
 	if err != nil {
-		return fmt.Errorf("unable to chown:%v", err)
+		return fmt.Errorf("unable to chown:%w", err)
 	}
 
 	return nil
@@ -156,6 +156,7 @@ func getOwnLocation() (string, error) {
 }
 
 func md5sum(binary string) (string, error) {
+	//nolint:gosec
 	hasher := md5.New()
 	s, err := ioutil.ReadFile(binary)
 	if err != nil {
@@ -174,6 +175,7 @@ func md5sum(binary string) (string, error) {
 func downloadFile(out *os.File, url, checksum string) error {
 
 	// Get the data
+	//nolint:gosec,noctx
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -193,7 +195,7 @@ func downloadFile(out *os.File, url, checksum string) error {
 
 	c, err := md5sum(out.Name())
 	if err != nil {
-		return fmt.Errorf("unable to calculate checksum:%v", err)
+		return fmt.Errorf("unable to calculate checksum:%w", err)
 	}
 	if c != checksum {
 		return fmt.Errorf("checksum mismatch %s:%s", c, checksum)
