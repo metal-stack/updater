@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -52,7 +51,7 @@ func New(owner, repo, programName string) (*Updater, error) {
 // Do actually updates local programm with the most recent found on the download server
 func (u *Updater) Do() error {
 
-	tmpFile, err := ioutil.TempFile("", u.programName)
+	tmpFile, err := os.CreateTemp("", u.programName)
 	if err != nil {
 		return fmt.Errorf("unable create tempfile:%w", err)
 	}
@@ -158,7 +157,7 @@ func getOwnLocation() (string, error) {
 func md5sum(binary string) (string, error) {
 	//nolint:gosec
 	hasher := md5.New()
-	s, err := ioutil.ReadFile(binary)
+	s, err := os.ReadFile(binary)
 	if err != nil {
 		return "", err
 	}
@@ -205,12 +204,12 @@ func downloadFile(out *os.File, url, checksum string) error {
 }
 
 func copy(src, dst string) error {
-	input, err := ioutil.ReadFile(src)
+	input, err := os.ReadFile(src)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(dst, input, os.ModeType)
+	err = os.WriteFile(dst, input, os.ModeType)
 	if err != nil {
 		return err
 	}
