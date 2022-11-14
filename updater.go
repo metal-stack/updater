@@ -13,11 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/metal-stack/v"
-
-	"github.com/cheggaaa/pb/v3"
-
 	"github.com/blang/semver/v4"
+	"github.com/cheggaaa/pb/v3"
+	"github.com/metal-stack/v"
 )
 
 // Updater update a running binary
