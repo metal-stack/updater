@@ -46,7 +46,7 @@ func New(owner, repo, programName string) (*Updater, error) {
 	}, nil
 }
 
-// Do actually updates local programm with the most recent found on the download server
+// Do actually updates local program with the most recent found on the download server
 func (u *Updater) Do() error {
 
 	tmpFile, err := os.CreateTemp("", u.programName)
