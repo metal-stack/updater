@@ -28,7 +28,7 @@ type Updater struct {
 }
 
 // New create a Updater
-func New(owner, repo, programName string) (*Updater, error) {
+func New(owner, repo, programName string, desiredVersion *string) (*Updater, error) {
 
 	fullProgramName := programName + "-" + runtime.GOOS + "-" + runtime.GOARCH
 
@@ -36,13 +36,17 @@ func New(owner, repo, programName string) (*Updater, error) {
 	if err != nil {
 		return nil, err
 	}
+	tag := release.tag
+	if desiredVersion != nil {
+		tag = *desiredVersion
+	}
 
 	return &Updater{
 		programName: programName,
 		downloadURL: release.url,
 		checksum:    release.checksum,
 		date:        release.date,
-		tag:         release.tag,
+		tag:         tag,
 	}, nil
 }
 
