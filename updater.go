@@ -32,13 +32,9 @@ func New(owner, repo, programName string, desiredVersion *string) (*Updater, err
 
 	fullProgramName := programName + "-" + runtime.GOOS + "-" + runtime.GOARCH
 
-	release, err := latestRelease(fullProgramName, owner, repo)
+	release, err := latestRelease(fullProgramName, owner, repo, desiredVersion)
 	if err != nil {
 		return nil, err
-	}
-	tag := release.tag
-	if desiredVersion != nil {
-		tag = *desiredVersion
 	}
 
 	return &Updater{
@@ -46,7 +42,7 @@ func New(owner, repo, programName string, desiredVersion *string) (*Updater, err
 		downloadURL: release.url,
 		checksum:    release.checksum,
 		date:        release.date,
-		tag:         tag,
+		tag:         release.tag,
 	}, nil
 }
 
