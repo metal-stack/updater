@@ -18,7 +18,7 @@ type release struct {
 	checksum string
 }
 
-func latestRelease(artefact, owner, repo string) (*release, error) {
+func latestRelease(artefact, owner, repo string, desired *string) (*release, error) {
 
 	client := github.NewClient(nil)
 
@@ -33,9 +33,13 @@ func latestRelease(artefact, owner, repo string) (*release, error) {
 		if r.GetDraft() || r.GetPrerelease() {
 			continue
 		}
+		if desired != nil && r.TagName != nil && *r.TagName != *desired {
+			continue
+		}
 		latestRelease = r
 		break
 	}
+
 	ras, _, err := client.Repositories.ListReleaseAssets(context.Background(), owner, repo, *latestRelease.ID, &github.ListOptions{})
 	if err != nil {
 		return nil, err
