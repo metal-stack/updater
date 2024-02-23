@@ -99,6 +99,44 @@ func Test_getAgeAndUptodateStatus(t *testing.T) {
 	}
 }
 
+func TestNewUpdater(t *testing.T) {
+
+	owner := "metal-stack"
+	repo := "metalctl"
+	programName := "metalctl"
+	v := "v0.14.1"
+	// Call New with appropriate arguments
+	updater, err := New(owner, repo, programName, &v)
+
+	// Check if error is nil
+	if err != nil {
+		t.Errorf("New returned an error: %v", err)
+	}
+
+	// Check if updater is nil
+	if updater == nil {
+		t.Error("New returned a nil updater")
+	}
+
+	// Check if updater fields have expected values
+	expectedProgramName := "metalctl"
+	if updater.programName != expectedProgramName {
+		t.Errorf("Expected programName: %s, Got: %s", expectedProgramName, updater.programName)
+	}
+	checkSum := "084a47d1c9e7c5384855c8f93ca52852"
+	if updater.checksum != checkSum {
+		t.Errorf("Expected checksum: %s, Got: %s", checkSum, updater.checksum)
+	}
+	downUrl := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
+	if updater.downloadURL != downUrl {
+		t.Errorf("Expected programName: %s, Got: %s", downUrl, updater.downloadURL)
+	}
+	tag := "v0.14.1"
+	if updater.tag != tag {
+		t.Errorf("Expected programName: %s, Got: %s", tag, updater.tag)
+	}
+}
+
 func must(tme time.Time, err error) time.Time {
 	if err != nil {
 		panic(err)
