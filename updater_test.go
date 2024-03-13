@@ -1,6 +1,8 @@
 package updater
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"time"
 )
@@ -97,6 +99,86 @@ func Test_getAgeAndUptodateStatus(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewUpdater(t *testing.T) {
+
+	owner := "metal-stack"
+	repo := "metalctl"
+	programName := "metalctl"
+	v := "v0.14.1"
+	// Call New with appropriate arguments
+	updater, err := New(owner, repo, programName, &v)
+
+	// Check if error is nil
+	if err != nil {
+		t.Errorf("New returned an error: %v", err)
+	}
+
+	// Add a nil check for updater to avoid dereferencing it if it's nil
+	if updater == nil {
+		t.Fatalf("updater is nil")
+	} else {
+		// Check if updater fields have expected values
+		expectedProgramName := "metalctl"
+
+		if updater.programName != expectedProgramName {
+			t.Errorf("Expected programName: %s, Got: %s", expectedProgramName, updater.programName)
+		}
+		checkSum := "084a47d1c9e7c5384855c8f93ca52852"
+		if updater.checksum != checkSum {
+			t.Errorf("Expected checksum: %s, Got: %s", checkSum, updater.checksum)
+		}
+		downUrl := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
+		if updater.downloadURL != downUrl {
+			t.Errorf("Expected downloadURL: %s, Got: %s", downUrl, updater.downloadURL)
+		}
+		tag := "v0.14.1"
+		if updater.tag != tag {
+			t.Errorf("Expected tag: %s, Got: %s", tag, updater.tag)
+		}
+	}
+}
+
+func TestDownloadFunction(t *testing.T) {
+
+	programName := "metalctl"
+	tmpFile, _ := os.CreateTemp("", programName)
+
+	url := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
+	checkSum := "084a47d1c9e7c5384855c8f93ca52852"
+
+	err := downloadFile(tmpFile, url, checkSum)
+
+	if err != nil {
+		t.Errorf("Couldnt download file: %v", err)
+	}
+
+	loc, _ := getOwnLocation()
+
+	fmt.Printf("\nThis is location %v", loc)
+
+}
+
+func TestUpdater_Do(t *testing.T) {
+
+	url := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
+	checkSum := "084a47d1c9e7c5384855c8f93ca52852"
+	programName := "metalctl"
+
+	// Initialize the updater with mock data
+	updater := &Updater{
+		programName: programName,
+		downloadURL: url,
+		checksum:    checkSum,
+	}
+
+	// Run the updater
+	if err := updater.Do(); err != nil {
+		t.Errorf("Updater failed: %v", err)
+	}
+
+	// Add assertions as needed to verify the behavior of the updater
 }
 
 func must(tme time.Time, err error) time.Time {
