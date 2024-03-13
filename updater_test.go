@@ -115,27 +115,28 @@ func TestNewUpdater(t *testing.T) {
 		t.Errorf("New returned an error: %v", err)
 	}
 
-	// Check if updater is nil
+	// Add a nil check for updater to avoid dereferencing it if it's nil
 	if updater == nil {
-		t.Error("New returned a nil updater")
-	}
+		t.Fatalf("updater is nil")
+	} else {
+		// Check if updater fields have expected values
+		expectedProgramName := "metalctl"
 
-	// Check if updater fields have expected values
-	expectedProgramName := "metalctl"
-	if updater.programName != expectedProgramName {
-		t.Errorf("Expected programName: %s, Got: %s", expectedProgramName, updater.programName)
-	}
-	checkSum := "084a47d1c9e7c5384855c8f93ca52852"
-	if updater.checksum != checkSum {
-		t.Errorf("Expected checksum: %s, Got: %s", checkSum, updater.checksum)
-	}
-	downUrl := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
-	if updater.downloadURL != downUrl {
-		t.Errorf("Expected programName: %s, Got: %s", downUrl, updater.downloadURL)
-	}
-	tag := "v0.14.1"
-	if updater.tag != tag {
-		t.Errorf("Expected programName: %s, Got: %s", tag, updater.tag)
+		if updater.programName != expectedProgramName {
+			t.Errorf("Expected programName: %s, Got: %s", expectedProgramName, updater.programName)
+		}
+		checkSum := "084a47d1c9e7c5384855c8f93ca52852"
+		if updater.checksum != checkSum {
+			t.Errorf("Expected checksum: %s, Got: %s", checkSum, updater.checksum)
+		}
+		downUrl := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
+		if updater.downloadURL != downUrl {
+			t.Errorf("Expected downloadURL: %s, Got: %s", downUrl, updater.downloadURL)
+		}
+		tag := "v0.14.1"
+		if updater.tag != tag {
+			t.Errorf("Expected tag: %s, Got: %s", tag, updater.tag)
+		}
 	}
 }
 
@@ -147,7 +148,11 @@ func TestDownloadFunction(t *testing.T) {
 	url := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
 	checkSum := "084a47d1c9e7c5384855c8f93ca52852"
 
-	downloadFile(tmpFile, url, checkSum)
+	err := downloadFile(tmpFile, url, checkSum)
+
+	if err != nil {
+		t.Errorf("Couldnt download file: %v", err)
+	}
 
 	loc, _ := getOwnLocation()
 
