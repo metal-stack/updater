@@ -155,16 +155,6 @@ func TestDownloadFunction(t *testing.T) {
 
 }
 
-type mockUpdater struct {
-	downloadURL string
-	checksum    string
-}
-
-func (m *mockUpdater) Do() error {
-	// Mock the behavior of updating
-	return nil
-}
-
 func TestUpdater_Do(t *testing.T) {
 
 	url := "https://github.com/metal-stack/metalctl/releases/download/v0.14.1/metalctl-linux-amd64"
