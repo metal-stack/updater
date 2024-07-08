@@ -25,3 +25,11 @@ func TestDesiredRelease(t *testing.T) {
 	require.Equal(t, v, release.tag)
 	require.Contains(t, release.url, "v0.14.1")
 }
+
+func TestUnknownDesiredRelease(t *testing.T) {
+
+	v := "v0.0.1"
+	release, err := latestRelease("metalctl-linux-amd64", "metal-stack", "metalctl", &v)
+	require.Error(t, err, "no release for given desired version:\"v0.0.1\"")
+	require.Nil(t, release)
+}
