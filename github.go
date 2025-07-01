@@ -40,6 +40,14 @@ func latestRelease(artefact, owner, repo string, desired *string) (*release, err
 		break
 	}
 
+	if latestRelease == nil {
+		desiredVersion := "latest"
+		if desired != nil {
+			desiredVersion = *desired
+		}
+		return nil, fmt.Errorf("no release for given desired version:%q", desiredVersion)
+	}
+
 	ras, _, err := client.Repositories.ListReleaseAssets(context.Background(), owner, repo, *latestRelease.ID, &github.ListOptions{})
 	if err != nil {
 		return nil, err
