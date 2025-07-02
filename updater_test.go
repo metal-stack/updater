@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -112,32 +113,22 @@ func TestNewUpdater(t *testing.T) {
 	tests := []struct {
 		name     string
 		version  string
-		sum      string
 		artefact string
 		owner    string
 		repo     string
 		url      string
-		fullName string // optional override
+		sums     map[string]string
 	}{
 		{
-			name:     "metalctl@v0.18.0 linux",
+			name:     "metalctl@v0.18.0",
 			owner:    "metal-stack",
 			repo:     "metalctl",
 			artefact: "metalctl",
-			fullName: "metalctl-linux-amd64",
 			version:  "v0.18.0",
-			sum:      "f423e891ba1034242913b030cc0692c1",
-			url:      "https://github.com/metal-stack/metalctl/releases/download/v0.18.0/metalctl-linux-amd64",
-		},
-		{
-			name:     "metalctl@v0.18.0 arm mac",
-			owner:    "metal-stack",
-			repo:     "metalctl",
-			artefact: "metalctl",
-			fullName: "metalctl-darwin-arm64",
-			version:  "v0.18.0",
-			sum:      "662284f6f9f015bd0b55c36ec3aae26e",
-			url:      "https://github.com/metal-stack/metalctl/releases/download/v0.18.0/metalctl-darwin-arm64",
+			sums: map[string]string{
+				"linux-amd64":  "f423e891ba1034242913b030cc0692c1",
+				"darwin-arm64": "662284f6f9f015bd0b55c36ec3aae26e",
+			},
 		},
 	}
 
@@ -151,14 +142,25 @@ func TestNewUpdater(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			if tt.fullName != "" {
-				updater.programName = tt.fullName
+			assert.Equal(t, tt.artefact, updater.programName)
+			assert.Equal(t, tt.version, updater.tag)
+			assert.Contains(t, updater.downloadURL, tt.version)
+			assert.Contains(t, updater.downloadURL, tt.artefact)
+			assert.Contains(t, updater.downloadURL, tt.owner)
+			assert.Contains(t, updater.downloadURL, tt.repo)
+
+			var found bool
+			for osArch, sum := range tt.sums {
+				if !strings.Contains(updater.downloadURL, osArch) {
+					continue
+				}
+
+				assert.Equal(t, sum, updater.checksum, "checksum does not match for %s", osArch)
 			}
 
-			assert.Equal(t, tt.artefact, updater.programName)
-			assert.Equal(t, tt.sum, updater.checksum)
-			assert.Equal(t, tt.version, updater.tag)
-			assert.Equal(t, tt.url, updater.downloadURL)
+			if !found {
+				t.Error("running on unknown os and arch combination", updater.downloadURL)
+			}
 		})
 	}
 }
