@@ -48,7 +48,6 @@ func New(owner, repo, programName string, desiredVersion *string) (*Updater, err
 
 // Do actually updates local program with the most recent found on the download server
 func (u *Updater) Do() error {
-
 	tmpFile, err := os.CreateTemp("", u.programName)
 	if err != nil {
 		return fmt.Errorf("unable create tempfile:%w", err)
