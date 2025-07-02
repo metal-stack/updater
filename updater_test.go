@@ -152,6 +152,7 @@ func TestNewUpdater(t *testing.T) {
 			var found bool
 			for osArch, sum := range tt.sums {
 				if !strings.Contains(updater.downloadURL, osArch) {
+					found = true
 					continue
 				}
 
