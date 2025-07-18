@@ -1,7 +1,7 @@
 package updater
 
 import (
-	"crypto/md5" //nolint:gosec
+	"crypto/sha512" //nolint:gosec
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -151,9 +151,9 @@ func getOwnLocation() (string, error) {
 	return location, nil
 }
 
-func md5sum(binary string) (string, error) {
+func sha512sum(binary string) (string, error) {
 	//nolint:gosec
-	hasher := md5.New()
+	hasher := sha512.New()
 	s, err := os.ReadFile(binary)
 	if err != nil {
 		return "", err
@@ -189,7 +189,7 @@ func downloadFile(out *os.File, url, checksum string) error {
 	}
 	bar.Finish()
 
-	c, err := md5sum(out.Name())
+	c, err := sha512sum(out.Name())
 	if err != nil {
 		return fmt.Errorf("unable to calculate checksum:%w", err)
 	}

@@ -120,14 +120,14 @@ func TestNewUpdater(t *testing.T) {
 		sums     map[string]string
 	}{
 		{
-			name:     "metalctl@v0.18.0",
+			name:     "metalctl@v0.18.1",
 			owner:    "metal-stack",
 			repo:     "metalctl",
 			artefact: "metalctl",
-			version:  "v0.18.0",
+			version:  "v0.18.1",
 			sums: map[string]string{
-				"linux-amd64":  "f423e891ba1034242913b030cc0692c1",
-				"darwin-arm64": "662284f6f9f015bd0b55c36ec3aae26e",
+				"linux-amd64":  "f1e483d009fc1fa95afc0f2219f13cb453a58bdcd1e86ae26e4ead220b28bb31058413a475d7ddd761c182d5e07d44232ba339dfc43d8e709169cf8e27b5c3cb",
+				"darwin-arm64": "9c55822cde198fa6d37a8d05767fb2310f21179bdc91ccb28c7dd1effa0129f7a72a0e1ac995804eaee0ae7aceb1777e9ac91726d4044d9ddba80c36d45bdee5",
 			},
 		},
 	}

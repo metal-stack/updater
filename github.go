@@ -55,7 +55,7 @@ func latestRelease(artefact, owner, repo string, desired *string) (*release, err
 
 	for _, ra := range ras {
 		if ra.GetName() == artefact {
-			checksum, err := slurpFile(ra.GetBrowserDownloadURL() + ".md5")
+			checksum, err := slurpFile(ra.GetBrowserDownloadURL() + ".sha512")
 			fmt.Printf("checksum:%s\n", checksum)
 			if err != nil {
 				return nil, err
