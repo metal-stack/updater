@@ -65,16 +65,25 @@ func (u *Updater) Do() error {
 		return fmt.Errorf("unable to stat old binary:%w", err)
 	}
 	mode := info.Mode()
+	//nolint:gosec
 	lf, err := os.OpenFile(location, os.O_WRONLY, mode)
 	if err != nil {
 		if os.IsPermission(err) {
 			return fmt.Errorf("unable to write to:%s need root access:%w", location, err)
 		}
 	}
-	lf.Close()
+	err = lf.Close()
+	if err != nil {
+		return fmt.Errorf("unable to close file:%w", err)
+	}
 
 	oldlocation := location + ".update"
-	defer os.Remove(oldlocation)
+	defer func() {
+		err = os.Remove(oldlocation)
+	}()
+	if err != nil {
+		return err
+	}
 	err = os.Rename(location, oldlocation)
 	if err != nil {
 		return fmt.Errorf("unable to rename old binary:%w", err)
@@ -154,7 +163,7 @@ func getOwnLocation() (string, error) {
 func sha512sum(binary string) (string, error) {
 	//nolint:gosec
 	hasher := sha512.New()
-	s, err := os.ReadFile(binary)
+	s, err := os.ReadFile(filepath.Clean(binary))
 	if err != nil {
 		return "", err
 	}
@@ -176,8 +185,18 @@ func downloadFile(out *os.File, url, checksum string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	defer out.Close()
+	defer func() {
+		err = resp.Body.Close()
+	}()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = out.Close()
+	}()
+	if err != nil {
+		return err
+	}
 	fileSize := resp.ContentLength
 
 	bar := pb.Full.Start64(fileSize)
@@ -201,7 +220,7 @@ func downloadFile(out *os.File, url, checksum string) error {
 }
 
 func copy(src, dst string) error {
-	input, err := os.ReadFile(src)
+	input, err := os.ReadFile(filepath.Clean(src))
 	if err != nil {
 		return err
 	}

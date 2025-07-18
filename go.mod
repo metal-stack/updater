@@ -1,6 +1,6 @@
 module github.com/metal-stack/updater
 
-go 1.22
+go 1.24
 
 require (
 	github.com/blang/semver/v4 v4.0.0
