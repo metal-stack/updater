@@ -22,7 +22,12 @@ func latestRelease(artefact, owner, repo string, desired *string) (*release, err
 
 	client := github.NewClient(nil)
 
-	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, &github.ListOptions{})
+	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, &github.ListOptions{
+		// defaults to 15, but we want to ensure we get enough releases
+		// 50 is reasonably large enough to not miss any releases
+		// in case we do, please refactor it yourself :)
+		PerPage: 50,
+	})
 	if err != nil {
 		return nil, err
 	}
