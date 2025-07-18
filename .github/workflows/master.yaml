@@ -1,6 +1,12 @@
 name: Build and Test
 
 on:
+  pull_request:
+    branches:
+      - master
+  release:
+    types:
+      - published
   push:
     branches:
       - master
@@ -9,17 +15,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Lint
-      uses: golangci/golangci-lint-action@v8
-    - name: Set up Go 1.24
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24.x'
-    - name: Test
-      run: |
-        make test
-    - uses: release-drafter/release-drafter@v6
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+      - name: Test
+        run: |
+          make test
