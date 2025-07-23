@@ -78,12 +78,6 @@ func (u *Updater) Do() error {
 	}
 
 	oldlocation := location + ".update"
-	defer func() {
-		err = os.Remove(oldlocation)
-	}()
-	if err != nil {
-		return err
-	}
 	err = os.Rename(location, oldlocation)
 	if err != nil {
 		return fmt.Errorf("unable to rename old binary:%w", err)
@@ -96,6 +90,11 @@ func (u *Updater) Do() error {
 	err = os.Chmod(location, mode)
 	if err != nil {
 		return fmt.Errorf("unable to chown:%w", err)
+	}
+
+	err = os.Remove(oldlocation)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -178,22 +177,9 @@ func sha512sum(binary string) (string, error) {
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func downloadFile(out *os.File, url, checksum string) error {
-
 	// Get the data
 	//nolint:gosec,noctx
 	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = resp.Body.Close()
-	}()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = out.Close()
-	}()
 	if err != nil {
 		return err
 	}
@@ -215,6 +201,12 @@ func downloadFile(out *os.File, url, checksum string) error {
 	if c != checksum {
 		return fmt.Errorf("checksum mismatch %s:%s", c, checksum)
 	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+	err = out.Close()
 
 	return err
 }

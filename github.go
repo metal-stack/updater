@@ -83,13 +83,12 @@ func slurpFile(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		err = resp.Body.Close()
-	}()
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
-	content, err := io.ReadAll(resp.Body)
+
+	err = resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
