@@ -65,16 +65,19 @@ func (u *Updater) Do() error {
 		return fmt.Errorf("unable to stat old binary:%w", err)
 	}
 	mode := info.Mode()
+	//nolint:gosec
 	lf, err := os.OpenFile(location, os.O_WRONLY, mode)
 	if err != nil {
 		if os.IsPermission(err) {
 			return fmt.Errorf("unable to write to:%s need root access:%w", location, err)
 		}
 	}
-	lf.Close()
+	err = lf.Close()
+	if err != nil {
+		return fmt.Errorf("unable to close file:%w", err)
+	}
 
 	oldlocation := location + ".update"
-	defer os.Remove(oldlocation)
 	err = os.Rename(location, oldlocation)
 	if err != nil {
 		return fmt.Errorf("unable to rename old binary:%w", err)
@@ -87,6 +90,11 @@ func (u *Updater) Do() error {
 	err = os.Chmod(location, mode)
 	if err != nil {
 		return fmt.Errorf("unable to chown:%w", err)
+	}
+
+	err = os.Remove(oldlocation)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -154,7 +162,7 @@ func getOwnLocation() (string, error) {
 func sha512sum(binary string) (string, error) {
 	//nolint:gosec
 	hasher := sha512.New()
-	s, err := os.ReadFile(binary)
+	s, err := os.ReadFile(filepath.Clean(binary))
 	if err != nil {
 		return "", err
 	}
@@ -169,15 +177,12 @@ func sha512sum(binary string) (string, error) {
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func downloadFile(out *os.File, url, checksum string) error {
-
 	// Get the data
 	//nolint:gosec,noctx
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	defer out.Close()
 	fileSize := resp.ContentLength
 
 	bar := pb.Full.Start64(fileSize)
@@ -197,11 +202,17 @@ func downloadFile(out *os.File, url, checksum string) error {
 		return fmt.Errorf("checksum mismatch %s:%s", c, checksum)
 	}
 
+	err = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+	err = out.Close()
+
 	return err
 }
 
 func copy(src, dst string) error {
-	input, err := os.ReadFile(src)
+	input, err := os.ReadFile(filepath.Clean(src))
 	if err != nil {
 		return err
 	}

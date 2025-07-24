@@ -83,10 +83,15 @@ func slurpFile(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return "", err
+	}
+
 	return strings.Split(string(content), " ")[0], nil
 }
