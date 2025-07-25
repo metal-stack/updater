@@ -72,10 +72,7 @@ func (u *Updater) Do() error {
 			return fmt.Errorf("unable to write to:%s need root access:%w", location, err)
 		}
 	}
-	err = lf.Close()
-	if err != nil {
-		return fmt.Errorf("unable to close file:%w", err)
-	}
+	_ = lf.Close()
 
 	oldlocation := location + ".update"
 	err = os.Rename(location, oldlocation)
